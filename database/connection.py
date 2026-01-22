@@ -3,7 +3,6 @@ from pathlib import Path
 import os
 import psycopg2
 
-# ЯВНО указываем путь к .env
 env_path = Path(__file__).resolve().parents[1] / ".env"
 load_dotenv(env_path)
 
