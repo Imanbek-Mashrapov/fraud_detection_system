@@ -1,13 +1,15 @@
 RANDOM_SEED = 42
-N_USERS = 10000
 
-MAX_DEVICE_PER_USER = 3
+N_USERS = 500            # было 10_000
 
-TX_DAYS = 30
+MAX_DEVICE_PER_USER = 2  # было 3
+
+TX_DAYS = 21           # было 30
 AVG_TX_PER_DAY = {
-    "low": 1,
+    "low": 3,
     "medium": 5,
     "high": 10
 }
+
 
 FRAUD_BASE_PROB = 0.01
