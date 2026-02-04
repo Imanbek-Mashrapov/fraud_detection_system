@@ -92,7 +92,9 @@ CREATE TABLE mart.fraud_predictions (
     transaction_id     TEXT PRIMARY KEY,
     fraud_probability  NUMERIC(5,4),
     model_version      TEXT,
-    prediction_ts      TIMESTAMP
+    prediction_ts      TIMESTAMP,
+    is_fraud           BOOLEAN,
+    score_source       TEXT
 );
 
 CREATE TABLE mart.model_metrics_daily (
