@@ -4,8 +4,25 @@ from data_generator.generate_devices import generate_devices
 from data_generator.generate_merchants import generate_merchants
 from data_generator.generate_transactions import generate_transactions
 from data_generator.label_transactions import label_transactions
-
+import os
 from database.connection import get_connection
+from data_generator.config import GENERATOR_MODE
+# python -m data_generator.run
+
+
+if GENERATOR_MODE not in {"DEV", "INCREMENTAL"}:
+    raise ValueError("GENERATOR_MODE must be DEV or INCREMENTAL")
+
+print(f"Running data generator in {GENERATOR_MODE} mode")
+
+def reset_raw_tables(cur):
+    cur.execute("""
+        TRUNCATE TABLE
+            raw.transactions,
+            raw.users
+        CASCADE;
+    """)
+
 
 def insert_users(cur, users):
     cur.executemany(
@@ -31,6 +48,7 @@ def insert_devices(cur, devices_by_user):
         """
         INSERT INTO core.devices (device_id, device_type, first_seen_ts)
         VALUES (%s, %s, %s)
+        ON CONFLICT (device_id) DO NOTHING;
         """,
         rows
     )
@@ -41,6 +59,7 @@ def insert_merchants(cur, merchants):
         """
         INSERT INTO core.merchants (merchant_id, merchant_category)
         VALUES (%s, %s)
+        ON CONFLICT (merchant_id) DO NOTHING;
         """,
         merchants
     )
@@ -110,9 +129,8 @@ def insert_fraud_predictions(cur, labeled_transactions):
 
 
 def main():
-    print("Starting data generation")
+    print(f"Starting data generation ({GENERATOR_MODE} mode)")
 
-    # Generation
     users = generate_users()
     devices_by_user = generate_devices(users)
     merchants = generate_merchants(10)
@@ -136,6 +154,10 @@ def main():
     cur = conn.cursor()
 
     try:
+        if GENERATOR_MODE == "DEV":
+            print("Resetting raw tables (DEV mode)")
+            reset_raw_tables(cur)
+
         insert_users(cur, users)
         insert_devices(cur, devices_by_user)
         insert_merchants(cur, merchants)
