@@ -18,6 +18,29 @@ AMOUNT_RANGES = {
     "KGS": (1, 300000)
 }
 
+ROUND_BASE_AMOUNTS = [100, 200, 500, 1000, 2000, 5000]
+ROUND_NOISE = [0, 0, 0, 0, 50]
+
+def generate_amount(currency, merchant_category):
+    min_amt, max_amt = AMOUNT_RANGES[currency]
+
+    if merchant_category == "transfer":
+        # 90% — обычные переводы
+        if random.random() < 0.9:
+            base = random.choice(ROUND_BASE_AMOUNTS)
+            noise = random.choice(ROUND_NOISE)
+            return float(min(base + noise, max_amt))
+
+        # 10% — крупные переводы (heavy tail)
+        lower = min(10_000, max_amt * 0.1)
+        return round(random.uniform(lower, max_amt), 0)
+
+    if merchant_category in {"subscriptions", "utilities"}:
+        base = random.choice(ROUND_BASE_AMOUNTS)
+        return float(min(base, max_amt))
+
+    return round(random.uniform(min_amt, max_amt), 2)
+
 
 def generate_transactions(
     users: List[tuple],
@@ -48,8 +71,7 @@ def generate_transactions(
                 device = random.choice(user_devices)
                 merchant = random.choice(merchants)
                 currency = random.choice(CURRENCIES)
-                min_amt, max_amt = AMOUNT_RANGES[currency]
-                amount = round(random.uniform(min_amt, max_amt), 2)
+                amount = generate_amount(currency, merchant[1])
                 transaction_country = fake.country_code()
 
                 transactions.append((

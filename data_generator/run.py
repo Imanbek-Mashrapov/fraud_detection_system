@@ -7,13 +7,10 @@ from data_generator.label_transactions import label_transactions
 import os
 from database.connection import get_connection
 from data_generator.config import GENERATOR_MODE
+
+# $env:GENERATOR_MODE="INCREMENTAL"
+# $env:GENERATOR_MODE="DEV"
 # python -m data_generator.run
-
-
-if GENERATOR_MODE not in {"DEV", "INCREMENTAL"}:
-    raise ValueError("GENERATOR_MODE must be DEV or INCREMENTAL")
-
-print(f"Running data generator in {GENERATOR_MODE} mode")
 
 def reset_raw_tables(cur):
     cur.execute("""
